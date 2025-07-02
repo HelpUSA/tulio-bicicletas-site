@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 
@@ -6,13 +6,27 @@ export default function CadastroUsuario() {
   const [nome, setNome] = useState('');
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
-  const [tipo, setTipo] = useState('cliente'); // padrão
+  const [confirmarSenha, setConfirmarSenha] = useState('');
+  const [tipo, setTipo] = useState('cliente');
   const [erro, setErro] = useState('');
+  const [tipoUsuarioLogado, setTipoUsuarioLogado] = useState(null);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    const tipoLocal = localStorage.getItem('tipoUsuario');
+    if (tipoLocal) {
+      setTipoUsuarioLogado(tipoLocal);
+    }
+  }, []);
 
   const handleCadastro = async (e) => {
     e.preventDefault();
     setErro('');
+
+    if (senha !== confirmarSenha) {
+      setErro('As senhas não coincidem.');
+      return;
+    }
 
     // 1. Cria o usuário no Supabase Auth
     const { data, error } = await supabase.auth.signUp({
@@ -27,13 +41,19 @@ export default function CadastroUsuario() {
 
     const userId = data?.user?.id;
 
-    // 2. Insere os dados adicionais na tabela usuarios
+    // 2. Validação de tipo (caso tentem forçar via inspeção)
+    const tipoFinal =
+      tipoUsuarioLogado === 'admin' && ['admin', 'operacional'].includes(tipo)
+        ? tipo
+        : 'cliente';
+
+    // 3. Insere os dados na tabela 'usuarios'
     const { error: insertError } = await supabase.from('usuarios').insert([
       {
         id: userId,
         nome,
         email,
-        tipo,
+        tipo: tipoFinal,
       },
     ]);
 
@@ -58,6 +78,7 @@ export default function CadastroUsuario() {
           className="border px-3 py-2 rounded"
           required
         />
+
         <input
           type="email"
           placeholder="E-mail"
@@ -66,6 +87,7 @@ export default function CadastroUsuario() {
           className="border px-3 py-2 rounded"
           required
         />
+
         <input
           type="password"
           placeholder="Senha"
@@ -75,16 +97,27 @@ export default function CadastroUsuario() {
           required
         />
 
-        {/* Campo de tipo apenas visível se for administrador (futuramente) */}
-        <select
-          value={tipo}
-          onChange={(e) => setTipo(e.target.value)}
+        <input
+          type="password"
+          placeholder="Confirmar senha"
+          value={confirmarSenha}
+          onChange={(e) => setConfirmarSenha(e.target.value)}
           className="border px-3 py-2 rounded"
-        >
-          <option value="cliente">Cliente (newsletter)</option>
-          <option value="operacional">Operacional</option>
-          <option value="admin">Administrador</option>
-        </select>
+          required
+        />
+
+        {/* Tipo de usuário: só aparece se quem estiver logado for admin */}
+        {tipoUsuarioLogado === 'admin' && (
+          <select
+            value={tipo}
+            onChange={(e) => setTipo(e.target.value)}
+            className="border px-3 py-2 rounded"
+          >
+            <option value="cliente">Cliente</option>
+            <option value="operacional">Operacional</option>
+            <option value="admin">Administrador</option>
+          </select>
+        )}
 
         {erro && <p className="text-red-600 text-sm">{erro}</p>}
 

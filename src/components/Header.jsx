@@ -1,7 +1,7 @@
-// src/components/Header.jsx
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ShoppingCart, User } from 'lucide-react';
+import { ShoppingCart } from 'lucide-react';
+import UserIcon from './UserIcon';
 
 const Header = () => {
   const [qtdItens, setQtdItens] = useState(0);
@@ -15,7 +15,6 @@ const Header = () => {
 
     atualizarQtd();
 
-    // Recalcula sempre que a aba for ativada novamente
     window.addEventListener('focus', atualizarQtd);
     return () => window.removeEventListener('focus', atualizarQtd);
   }, []);
@@ -39,11 +38,9 @@ const Header = () => {
           <Link to="/contato" className="hover:text-green-700">Contato</Link>
         </nav>
 
-        {/* Ícones */}
+        {/* Ícones do topo */}
         <div className="flex items-center space-x-4">
-          <Link to="/login" className="hover:text-green-700">
-            <User size={20} />
-          </Link>
+          <UserIcon />
           <Link to="/carrinho" className="relative hover:text-green-700">
             <ShoppingCart size={20} />
             {qtdItens > 0 && (

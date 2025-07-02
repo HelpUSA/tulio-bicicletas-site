@@ -8,14 +8,16 @@ export default function UserIcon() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const session = supabase.auth.getSession().then(({ data }) => {
+    const carregarSessao = async () => {
+      const { data } = await supabase.auth.getSession();
       const user = data?.session?.user;
       if (user) {
         setUsuarioEmail(user.email);
       }
-    });
+    };
 
-    // Listener para manter sincronizado
+    carregarSessao();
+
     const { data: listener } = supabase.auth.onAuthStateChange(
       (_event, session) => {
         if (session?.user) {
@@ -31,40 +33,17 @@ export default function UserIcon() {
     };
   }, []);
 
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    localStorage.removeItem('tipoUsuario');
-    localStorage.removeItem('usuarioEmail');
-    setUsuarioEmail(null);
-    navigate('/');
+  const handleClick = () => {
+    if (usuarioEmail) {
+      navigate('/admin'); // pode ser alterado para painel do usuário futuramente
+    } else {
+      navigate('/login');
+    }
   };
 
   return (
-    <div className="absolute top-4 right-4 z-50">
-      <div className="relative group">
-        <FaUserCircle className="text-3xl text-gray-700 cursor-pointer hover:text-green-600" />
-
-        <div className="absolute right-0 mt-2 w-48 bg-white border rounded shadow-lg hidden group-hover:block p-3 text-sm">
-          {usuarioEmail ? (
-            <>
-              <p className="font-semibold mb-2">{usuarioEmail}</p>
-              <button
-                onClick={handleLogout}
-                className="w-full bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700"
-              >
-                Sair
-              </button>
-            </>
-          ) : (
-            <button
-              onClick={() => navigate('/login')}
-              className="w-full bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700"
-            >
-              Entrar
-            </button>
-          )}
-        </div>
-      </div>
-    </div>
+    <button onClick={handleClick}>
+      <FaUserCircle className="text-3xl text-gray-700 hover:text-green-600" />
+    </button>
   );
 }
