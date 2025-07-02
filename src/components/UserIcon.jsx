@@ -35,14 +35,18 @@ export default function UserIcon() {
 
   const handleClick = () => {
     if (usuarioEmail) {
-      navigate('/admin'); // pode ser alterado para painel do usuário futuramente
+      navigate('/admin'); // redireciona se estiver logado
     } else {
-      navigate('/login');
+      navigate('/login'); // redireciona para login se não estiver
     }
   };
 
   return (
-    <button onClick={handleClick}>
+    <button
+      onClick={handleClick}
+      className="z-50 p-1 bg-transparent hover:bg-gray-100 rounded-full focus:outline-none"
+      title={usuarioEmail ? 'Acessar painel' : 'Entrar'}
+    >
       <FaUserCircle className="text-3xl text-gray-700 hover:text-green-600" />
     </button>
   );

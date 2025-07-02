@@ -3,8 +3,9 @@ import { Link } from 'react-router-dom';
 import { ShoppingCart } from 'lucide-react';
 import UserIcon from './UserIcon';
 
-const Header = () => {
+export default function Header() {
   const [qtdItens, setQtdItens] = useState(0);
+  const [isScrolled, setIsScrolled] = useState(false);
 
   useEffect(() => {
     const atualizarQtd = () => {
@@ -13,38 +14,63 @@ const Header = () => {
       setQtdItens(total);
     };
 
-    atualizarQtd();
+    const onScroll = () => {
+      setIsScrolled(window.scrollY > 10);
+    };
 
+    atualizarQtd();
     window.addEventListener('focus', atualizarQtd);
-    return () => window.removeEventListener('focus', atualizarQtd);
+    window.addEventListener('scroll', onScroll);
+
+    return () => {
+      window.removeEventListener('focus', atualizarQtd);
+      window.removeEventListener('scroll', onScroll);
+    };
   }, []);
 
   return (
-    <header className="w-full fixed top-0 z-50 bg-white shadow border-b border-gray-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
+    <header
+      className={`fixed top-0 w-full z-50 transition-all duration-300 ease-in-out ${
+        isScrolled ? 'bg-white/90 shadow-md backdrop-blur' : 'bg-white'
+      } border-b border-gray-200`}
+    >
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex justify-between items-center h-16">
         
-        {/* Logo */}
-        <div className="flex-shrink-0">
-          <Link to="/">
-            <img src="/logo.png" alt="Túlio Bicicletas" className="h-10" />
-          </Link>
-        </div>
+        {/* Logo com animação */}
+        <Link
+          to="/"
+          className="flex items-center gap-2 hover:scale-105 transition-transform duration-300"
+        >
+          <img
+            src="/logo.png"
+            alt="Túlio Bicicletas"
+            className="h-10 w-auto"
+            loading="lazy"
+          />
+          <span className="hidden sm:block text-lg font-extrabold text-green-700 tracking-tight">
+            Túlio Bicicletas
+          </span>
+        </Link>
 
-        {/* Menu principal */}
-        <nav className="hidden md:flex space-x-8 text-sm font-medium text-gray-700">
-          <Link to="/" className="hover:text-green-700">Início</Link>
-          <Link to="/produtos" className="hover:text-green-700">Bicicletas</Link>
-          <Link to="/sobre" className="hover:text-green-700">Sobre</Link>
-          <Link to="/contato" className="hover:text-green-700">Contato</Link>
+        {/* Menu */}
+        <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-gray-700">
+          <Link to="/" className="hover:text-green-700 transition-colors">Início</Link>
+          <Link to="/produtos" className="hover:text-green-700 transition-colors">Bicicletas</Link>
+          <Link to="/sobre" className="hover:text-green-700 transition-colors">Sobre</Link>
+          <Link to="/contato" className="hover:text-green-700 transition-colors">Contato</Link>
         </nav>
 
-        {/* Ícones do topo */}
-        <div className="flex items-center space-x-4">
+        {/* Ícones */}
+        <div className="flex items-center gap-4">
           <UserIcon />
-          <Link to="/carrinho" className="relative hover:text-green-700">
-            <ShoppingCart size={20} />
+          <Link
+            to="/carrinho"
+            className="relative group text-gray-700 hover:text-green-700 transition-colors"
+            aria-label="Carrinho de compras"
+          >
+            <ShoppingCart size={22} />
             {qtdItens > 0 && (
-              <span className="absolute -top-2 -right-2 bg-red-600 text-white text-xs w-5 h-5 flex items-center justify-center rounded-full">
+              <span className="absolute -top-2 -right-2 bg-red-600 text-white text-[11px] w-5 h-5 flex items-center justify-center rounded-full animate-pulse">
                 {qtdItens}
               </span>
             )}
@@ -53,6 +79,4 @@ const Header = () => {
       </div>
     </header>
   );
-};
-
-export default Header;
+}
