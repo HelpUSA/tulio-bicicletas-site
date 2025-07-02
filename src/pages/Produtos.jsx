@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
+import { Link } from 'react-router-dom';
 
 export default function Produtos() {
   const [produtos, setProdutos] = useState([]);
@@ -27,20 +28,31 @@ export default function Produtos() {
       ) : (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px' }}>
           {produtos.map((produto) => (
-            <div key={produto.id} style={{
-              border: '1px solid #ccc',
-              padding: '10px',
-              width: '200px',
-              textAlign: 'center'
-            }}>
-              <img
-                src={produto.imagem_url}
-                alt={produto.nome}
-                style={{ width: '100%', height: 'auto' }}
-              />
-              <h3>{produto.nome}</h3>
-              <p>R$ {produto.preco.toFixed(2)}</p>
-            </div>
+            <Link
+              key={produto.id}
+              to={`/produto/${produto.id}`}
+              style={{
+                textDecoration: 'none',
+                color: 'inherit'
+              }}
+            >
+              <div style={{
+                border: '1px solid #ccc',
+                padding: '10px',
+                width: '200px',
+                textAlign: 'center',
+                transition: '0.3s',
+                borderRadius: '8px'
+              }}>
+                <img
+                  src={produto.imagem_url}
+                  alt={produto.nome}
+                  style={{ width: '100%', height: 'auto' }}
+                />
+                <h3>{produto.nome}</h3>
+                <p>R$ {produto.preco.toFixed(2)}</p>
+              </div>
+            </Link>
           ))}
         </div>
       )}
