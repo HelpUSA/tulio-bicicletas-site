@@ -1,4 +1,3 @@
-// src/pages/Home.jsx
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import ProductCard from '../components/ProductCard';
@@ -35,12 +34,11 @@ const Home = () => {
         return {
           ...product,
           brandName: brand?.name || '',
-          imageUrl: image?.url || '', // Corrigido para 'url'
+          imageUrl: image?.url || '',
         };
       });
 
       console.log('Produtos carregados:', enrichedProducts.map(p => ({ id: p.id, name: p.name })));
-
       setProducts(enrichedProducts);
     } catch (err) {
       console.error('Erro inesperado:', err);
@@ -59,10 +57,7 @@ const Home = () => {
       <h1 className="text-2xl font-bold mb-4">Produtos</h1>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         {products.map((product) => (
-          <div key={product.id}>
-            <p className="text-xs text-gray-400">ID: {product.id}</p>
-            <ProductCard product={product} formatarPreco={formatarPreco} />
-          </div>
+          <ProductCard key={product.id} product={product} formatarPreco={formatarPreco} />
         ))}
       </div>
     </div>
@@ -70,4 +65,3 @@ const Home = () => {
 };
 
 export default Home;
-
