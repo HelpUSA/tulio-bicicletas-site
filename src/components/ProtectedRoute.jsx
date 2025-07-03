@@ -1,26 +1,42 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
-import useAuth from '../lib/useAuth';
+import { supabase } from '../lib/supabase';
 
-/**
- * Componente para proteger rotas.
- *
- * @param {ReactNode} children - componente filho (a rota protegida).
- * @param {string[]} permitido - array com os tipos de usuário permitidos.
- */
 export default function ProtectedRoute({ children, permitido = [] }) {
-  const { usuario, carregando } = useAuth();
+  const [carregando, setCarregando] = useState(true);
+  const [autorizado, setAutorizado] = useState(false);
 
-  if (carregando) return <p>Carregando...</p>;
+  useEffect(() => {
+    const verificarPermissao = async () => {
+      const { data } = await supabase.auth.getSession();
+      const usuario = data?.session?.user;
 
-  if (!usuario) {
-    return <Navigate to="/login" replace />;
-  }
+      if (!usuario) {
+        setAutorizado(false);
+        setCarregando(false);
+        return;
+      }
 
-  const tipo = localStorage.getItem('tipoUsuario');
+      const { data: perfil } = await supabase
+        .from('usuarios')
+        .select('tipo')
+        .eq('id', usuario.id)
+        .single();
 
-  if (permitido.length > 0 && !permitido.includes(tipo)) {
-    return <Navigate to="/" replace />;
+      if (perfil && permitido.includes(perfil.tipo)) {
+        setAutorizado(true);
+      }
+
+      setCarregando(false);
+    };
+
+    verificarPermissao();
+  }, [permitido]);
+
+  if (carregando) return null;
+
+  if (!autorizado) {
+    return <Navigate to="/login" />;
   }
 
   return children;

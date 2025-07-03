@@ -1,0 +1,17 @@
+/* src/styles/zoom.css */
+
+.inner-image-zoom {
+  position: relative;
+  display: block;
+  cursor: zoom-in;
+}
+
+.inner-image-zoom__zoom-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  z-index: 9999;
+  max-width: none;
+}

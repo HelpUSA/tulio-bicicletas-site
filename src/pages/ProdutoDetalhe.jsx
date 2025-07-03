@@ -2,8 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { FaWhatsapp, FaShoppingCart } from 'react-icons/fa';
-import Zoom from 'react-medium-image-zoom';
-import 'react-medium-image-zoom/dist/styles.css';
+import InnerImageZoom from 'react-inner-image-zoom';
+import '../styles/zoom.css'; // ✅ CSS local para o zoom
 
 const ProdutoDetalhe = () => {
   const { id } = useParams();
@@ -44,6 +44,19 @@ const ProdutoDetalhe = () => {
 
       const urls = imagesData?.map((img) => img.url) || [];
 
+      const agrupadasTemp = variacoesData.reduce((acc, v) => {
+        if (!acc[v.name]) acc[v.name] = [];
+        if (!acc[v.name].includes(v.value)) acc[v.name].push(v.value);
+        return acc;
+      }, {});
+
+      const preSelecionadas = {};
+      for (const nome in agrupadasTemp) {
+        if (agrupadasTemp[nome].length === 1) {
+          preSelecionadas[nome] = agrupadasTemp[nome][0];
+        }
+      }
+
       setProduto({
         ...produtoData,
         brandName: brandData?.name || '',
@@ -52,6 +65,7 @@ const ProdutoDetalhe = () => {
       setImagens(urls);
       setImagemAtual(urls[0] || '');
       setVariacoes(variacoesData);
+      setSelecionadas(preSelecionadas);
     };
 
     fetchProduto();
@@ -87,30 +101,31 @@ const ProdutoDetalhe = () => {
   return (
     <div className="p-6 max-w-6xl mx-auto">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* Imagem com zoom clicável */}
+        {/* Imagem com zoom estilo lupa */}
         <div>
           {imagemAtual && (
             <div className="border rounded-lg overflow-hidden mb-3 max-w-md mx-auto">
-              <Zoom>
-                <img
-                  src={imagemAtual}
-                  alt={produto.name}
-                  className="w-full h-auto object-contain rounded-lg cursor-zoom-in"
-                />
-              </Zoom>
+              <InnerImageZoom
+                src={imagemAtual}
+                zoomSrc={imagemAtual}
+                alt={produto.name}
+                zoomType="hover"
+                zoomPreload={true}
+                className="rounded-lg"
+              />
             </div>
           )}
 
-          {/* Miniaturas */}
+          {/* Carrossel de miniaturas horizontal */}
           {imagens.length > 1 && (
-            <div className="flex gap-2 justify-center flex-wrap">
+            <div className="flex gap-2 overflow-x-auto py-2 px-1 scrollbar-thin scrollbar-thumb-gray-300">
               {imagens.map((img, index) => (
                 <img
                   key={index}
                   src={img}
                   onClick={() => setImagemAtual(img)}
                   alt={`Miniatura ${index + 1}`}
-                  className={`w-16 h-16 object-cover rounded border cursor-pointer ${
+                  className={`w-20 h-20 flex-shrink-0 object-cover rounded border cursor-pointer transition-transform duration-200 hover:scale-105 ${
                     imagemAtual === img ? 'border-green-600' : 'border-gray-300'
                   }`}
                 />
@@ -126,17 +141,18 @@ const ProdutoDetalhe = () => {
           <p className="text-gray-700 mb-4">{produto.description}</p>
 
           <div className="text-green-700 text-2xl font-bold mb-4">
-            {produto.promotional_price ? (
-              <>
-                <span className="line-through text-gray-500 mr-2">
-                  {formatarPreco(produto.price)}
-                </span>
-                <span>{formatarPreco(produto.promotional_price)}</span>
-              </>
-            ) : (
-              <span>{formatarPreco(produto.price)}</span>
-            )}
+            <span>{formatarPreco(produto.price)}</span>
           </div>
+
+          {/* Variações selecionadas */}
+          {Object.entries(selecionadas).length > 0 && (
+            <p className="text-sm mb-2 text-gray-600">
+              Selecionado:{" "}
+              {Object.entries(selecionadas)
+                .map(([nome, valor]) => `${nome}: ${valor}`)
+                .join(", ")}
+            </p>
+          )}
 
           {/* Variações */}
           {Object.keys(agrupadas).map((nome) => (

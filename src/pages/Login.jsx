@@ -32,28 +32,23 @@ export default function Login() {
       return;
     }
 
-    const { data: perfil, error: erroPerfil } = await supabase
+    const { data: usuarioPerfil, error: erroPerfil } = await supabase
       .from('usuarios')
       .select('tipo')
       .eq('id', userId)
       .single();
 
-    if (erroPerfil || !perfil) {
+    if (erroPerfil || !usuarioPerfil) {
       setErro('Tipo de usuário não encontrado.');
       setCarregando(false);
       return;
     }
 
-    localStorage.setItem('tipoUsuario', perfil.tipo);
+    localStorage.setItem('tipoUsuario', usuarioPerfil.tipo);
     localStorage.setItem('usuarioEmail', email);
 
-    if (perfil.tipo === 'admin') {
-      navigate('/admin');
-    } else if (perfil.tipo === 'operacional') {
-      navigate('/admin/cadastrar');
-    } else {
-      navigate('/');
-    }
+    // ✅ Agora redireciona para a página de perfil
+    navigate('/perfil');
 
     setCarregando(false);
   };
