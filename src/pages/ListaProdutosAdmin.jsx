@@ -1,3 +1,6 @@
+// ListaProdutosAdmin.jsx
+// Lista todos os produtos do usuário logado com opção de alterar, excluir e imprimir
+
 import React, { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
@@ -14,9 +17,18 @@ export default function ListaProdutosAdmin() {
 
   const carregarProdutos = async () => {
     setCarregando(true);
+    const { data: session } = await supabase.auth.getUser();
+    const userId = session?.user?.id;
+
+    if (!userId) {
+      alert('Usuário não autenticado.');
+      return;
+    }
+
     const { data, error } = await supabase
       .from('products')
       .select('id, name, price, stock')
+      .eq('user_id', userId)
       .order('name');
 
     if (error) {
@@ -28,12 +40,21 @@ export default function ListaProdutosAdmin() {
   };
 
   const handleExcluir = async (id) => {
-    if (window.confirm('Deseja realmente excluir este produto?')) {
-      const { error } = await supabase.from('products').delete().eq('id', id);
-      if (error) {
-        alert('Erro ao excluir: ' + error.message);
-      } else {
+    if (window.confirm('Deseja realmente excluir este produto e todos os dados associados?')) {
+      try {
+        // Exclui dados relacionados
+        await supabase.from('product_images').delete().eq('product_id', id);
+        await supabase.from('product_variants').delete().eq('product_id', id);
+        await supabase.from('product_categories').delete().eq('product_id', id);
+        await supabase.from('product_tags').delete().eq('product_id', id);
+
+        // Exclui o produto
+        const { error } = await supabase.from('products').delete().eq('id', id);
+        if (error) throw error;
+
         carregarProdutos();
+      } catch (err) {
+        alert('Erro ao excluir produto: ' + err.message);
       }
     }
   };
@@ -80,7 +101,7 @@ export default function ListaProdutosAdmin() {
             {produtosFiltrados.map((produto) => (
               <tr key={produto.id} className="border-t hover:bg-gray-50">
                 <td className="p-2">{produto.name}</td>
-                <td className="p-2">R$ {produto.price.toFixed(2)}</td>
+                <td className="p-2">R$ {parseFloat(produto.price).toFixed(2)}</td>
                 <td className="p-2">{produto.stock}</td>
                 <td className="p-2 flex gap-2">
                   <button

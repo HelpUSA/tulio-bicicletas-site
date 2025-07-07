@@ -1,7 +1,7 @@
 import React from 'react';
 
 const WhatsAppButton = () => {
-  const numero = '5583998721848';
+  const numero = '5592999970102';
   const mensagem = 'Olá! Gostaria de saber mais sobre os produtos da Túlio Bicicletas.';
 
   return (
