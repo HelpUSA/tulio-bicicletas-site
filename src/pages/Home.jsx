@@ -1,7 +1,8 @@
+// Home.jsx
 import React, { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import ProductCard from '../components/ProductCard';
-import Newsletter from '../components/NewsletterForm'; // ✅ Import da newsletter
+import Newsletter from '../components/NewsletterForm';
 
 const Home = () => {
   const [products, setProducts] = useState([]);
@@ -14,7 +15,8 @@ const Home = () => {
     try {
       const { data: productsData, error: productsError } = await supabase
         .from('products')
-        .select('*');
+        .select('*')
+        .order('created_at', { ascending: false });
 
       const { data: brandsData } = await supabase.from('brands').select('*');
       const { data: imagesData } = await supabase.from('product_images').select('*');
@@ -65,8 +67,8 @@ const Home = () => {
         </div>
       </div>
 
-      {/* 🛍️ Lista de Produtos */}
-      <section className="max-w-7xl mx-auto px-6 py-12">
+      {/* 🛍️ Lista de Produtos com rolagem */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
         <h2 className="text-3xl font-bold text-center text-gray-800 mb-10">
           Nossos Produtos
         </h2>
@@ -74,21 +76,23 @@ const Home = () => {
         {products.length === 0 ? (
           <p className="text-center text-gray-500">Carregando produtos...</p>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-            {products.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                formatarPreco={formatarPreco}
-              />
-            ))}
+          <div className="max-h-[640px] overflow-y-auto">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 pb-2">
+              {products.map((product) => (
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  formatarPreco={formatarPreco}
+                />
+              ))}
+            </div>
           </div>
         )}
       </section>
 
       {/* ⭐ Benefícios - Estilo institucional */}
       <section className="bg-gray-100 py-16">
-        <div className="max-w-7xl mx-auto px-6 text-center">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 text-center">
           <h2 className="text-2xl sm:text-3xl font-extrabold text-green-700 mb-12">
             Por que escolher a Túlio Bicicletas?
           </h2>
