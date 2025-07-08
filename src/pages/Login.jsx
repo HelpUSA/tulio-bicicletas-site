@@ -14,6 +14,16 @@ export default function Login() {
     setErro('');
     setCarregando(true);
 
+    // ✅ USUÁRIO ADMIN DE EMERGÊNCIA (sem banco)
+    if (email.trim().toLowerCase() === 'admin@gmail.com' && senha === 'admin123') {
+      localStorage.setItem('tipoUsuario', 'admin');
+      localStorage.setItem('usuarioEmail', email);
+      navigate('/perfil');
+      setCarregando(false);
+      return;
+    }
+
+    // 🔐 Login normal via Supabase
     const { data, error } = await supabase.auth.signInWithPassword({
       email,
       password: senha,
@@ -36,6 +46,7 @@ export default function Login() {
       .from('usuarios')
       .select('tipo')
       .eq('id', userId)
+      .eq('ativo', true)
       .single();
 
     if (erroPerfil || !usuarioPerfil) {
@@ -46,10 +57,7 @@ export default function Login() {
 
     localStorage.setItem('tipoUsuario', usuarioPerfil.tipo);
     localStorage.setItem('usuarioEmail', email);
-
-    // ✅ Agora redireciona para a página de perfil
     navigate('/perfil');
-
     setCarregando(false);
   };
 

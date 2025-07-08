@@ -67,10 +67,10 @@ export default function Perfil() {
 
         {usuario.tipo === 'admin' && (
           <button
-            className="bg-purple-600 text-white py-2 rounded hover:bg-purple-700"
-            onClick={() => navigate('/admin/cadastrar-usuario')}
+            className="bg-gray-800 text-white py-2 rounded hover:bg-gray-900"
+            onClick={() => navigate('/gerenciar-usuarios')}
           >
-            Cadastrar Usuário
+            👤 Gerenciar Usuários
           </button>
         )}
 

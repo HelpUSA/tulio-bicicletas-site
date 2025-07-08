@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
 import Header from './components/Header';
 import Footer from './components/Footer';
-import WhatsAppButton from './components/WhatsAppButton'; // ✅ novo import
+import WhatsAppButton from './components/WhatsAppButton';
 import ProtectedRoute from './components/ProtectedRoute';
 
 // 📦 Páginas principais
@@ -14,7 +14,6 @@ import Login from './pages/Login';
 
 // 👤 Usuário
 import CadastroUsuario from './pages/CadastroUsuario';
-import CadastroUsuarioAdmin from './pages/CadastroUsuarioAdmin';
 import Perfil from './pages/Perfil';
 import AlterarSenha from './pages/AlterarSenha';
 
@@ -23,6 +22,7 @@ import ListaProdutosAdmin from './pages/ListaProdutosAdmin';
 import CadastrarProduto from './pages/CadastrarProduto';
 import EditarProduto from './pages/EditarProduto';
 import Newsletter from './pages/NewsletterAdmin';
+import GerenciarUsuarios from './pages/GerenciarUsuarios'; // ✅ painel novo
 
 // 🧾 Institucional
 import ComoComprar from './pages/ComoComprar';
@@ -82,14 +82,6 @@ function App() {
             }
           />
           <Route
-            path="/admin/cadastrar-usuario"
-            element={
-              <ProtectedRoute permitido={['admin']}>
-                <CadastroUsuarioAdmin />
-              </ProtectedRoute>
-            }
-          />
-          <Route
             path="/admin/alterar-senha"
             element={
               <ProtectedRoute permitido={['admin', 'operacional', 'cliente']}>
@@ -113,11 +105,19 @@ function App() {
               </ProtectedRoute>
             }
           />
+          <Route
+            path="/gerenciar-usuarios"
+            element={
+              <ProtectedRoute permitido={['admin']}>
+                <GerenciarUsuarios />
+              </ProtectedRoute>
+            }
+          />
 
         </Routes>
       </div>
       <Footer />
-      <WhatsAppButton /> {/* ✅ botão sempre visível */}
+      <WhatsAppButton />
     </Router>
   );
 }
