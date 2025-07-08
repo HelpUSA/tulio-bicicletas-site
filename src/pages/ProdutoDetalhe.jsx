@@ -1,9 +1,9 @@
+// ProdutoDetalhe.jsx
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { FaWhatsapp, FaShoppingCart } from 'react-icons/fa';
-import InnerImageZoom from 'react-inner-image-zoom';
-import '../styles/zoom.css'; // ✅ CSS local para o zoom
+import '../styles/zoom.css'; // mantém se houver estilos personalizados
 
 const ProdutoDetalhe = () => {
   const { id } = useParams();
@@ -42,13 +42,13 @@ const ProdutoDetalhe = () => {
         .select('*')
         .eq('product_id', id);
 
-      const urls = imagesData?.map((img) => img.url) || [];
-
-      const agrupadasTemp = variacoesData.reduce((acc, v) => {
-        if (!acc[v.name]) acc[v.name] = [];
-        if (!acc[v.name].includes(v.value)) acc[v.name].push(v.value);
+      const agrupadasTemp = variacoesData?.reduce((acc, v) => {
+        if (!acc[v.variant_name]) acc[v.variant_name] = [];
+        if (!acc[v.variant_name].includes(v.variant_value)) {
+          acc[v.variant_name].push(v.variant_value);
+        }
         return acc;
-      }, {});
+      }, {}) || {};
 
       const preSelecionadas = {};
       for (const nome in agrupadasTemp) {
@@ -62,9 +62,10 @@ const ProdutoDetalhe = () => {
         brandName: brandData?.name || '',
       });
 
+      const urls = [...new Set(imagesData?.map((img) => img.url))];
       setImagens(urls);
       setImagemAtual(urls[0] || '');
-      setVariacoes(variacoesData);
+      setVariacoes(variacoesData || []);
       setSelecionadas(preSelecionadas);
     };
 
@@ -72,8 +73,10 @@ const ProdutoDetalhe = () => {
   }, [id]);
 
   const agrupadas = variacoes.reduce((acc, v) => {
-    if (!acc[v.name]) acc[v.name] = [];
-    if (!acc[v.name].includes(v.value)) acc[v.name].push(v.value);
+    if (!acc[v.variant_name]) acc[v.variant_name] = [];
+    if (!acc[v.variant_name].includes(v.variant_value)) {
+      acc[v.variant_name].push(v.variant_value);
+    }
     return acc;
   }, {});
 
@@ -86,7 +89,7 @@ const ProdutoDetalhe = () => {
     const item = {
       ...produto,
       quantidade: 1,
-      variacoes: selecionadas
+      variacoes: selecionadas,
     };
     carrinho.push(item);
     localStorage.setItem('carrinho', JSON.stringify(carrinho));
@@ -101,22 +104,17 @@ const ProdutoDetalhe = () => {
   return (
     <div className="p-6 max-w-6xl mx-auto">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-        {/* Imagem com zoom estilo lupa */}
+        {/* Imagem principal sem lupa */}
         <div>
           {imagemAtual && (
             <div className="border rounded-lg overflow-hidden mb-3 max-w-md mx-auto">
-              <InnerImageZoom
+              <img
                 src={imagemAtual}
-                zoomSrc={imagemAtual}
                 alt={produto.name}
-                zoomType="hover"
-                zoomPreload={true}
-                className="rounded-lg"
+                className="rounded-lg w-full"
               />
             </div>
           )}
-
-          {/* Carrossel de miniaturas horizontal */}
           {imagens.length > 1 && (
             <div className="flex gap-2 overflow-x-auto py-2 px-1 scrollbar-thin scrollbar-thumb-gray-300">
               {imagens.map((img, index) => (
@@ -125,8 +123,10 @@ const ProdutoDetalhe = () => {
                   src={img}
                   onClick={() => setImagemAtual(img)}
                   alt={`Miniatura ${index + 1}`}
-                  className={`w-20 h-20 flex-shrink-0 object-cover rounded border cursor-pointer transition-transform duration-200 hover:scale-105 ${
-                    imagemAtual === img ? 'border-green-600' : 'border-gray-300'
+                  className={`w-20 h-20 object-cover rounded border cursor-pointer hover:scale-105 transition-transform duration-200 ${
+                    imagemAtual === img
+                      ? 'border-green-600'
+                      : 'border-gray-300'
                   }`}
                 />
               ))}
@@ -134,27 +134,25 @@ const ProdutoDetalhe = () => {
           )}
         </div>
 
-        {/* Informações do produto */}
+        {/* Informações do Produto */}
         <div>
           <h1 className="text-2xl font-bold mb-2">{produto.name}</h1>
           <p className="text-sm text-gray-500 mb-1">Marca: {produto.brandName}</p>
           <p className="text-gray-700 mb-4">{produto.description}</p>
 
           <div className="text-green-700 text-2xl font-bold mb-4">
-            <span>{formatarPreco(produto.price)}</span>
+            {formatarPreco(produto.price)}
           </div>
 
-          {/* Variações selecionadas */}
           {Object.entries(selecionadas).length > 0 && (
             <p className="text-sm mb-2 text-gray-600">
-              Selecionado:{" "}
+              Selecionado:{' '}
               {Object.entries(selecionadas)
                 .map(([nome, valor]) => `${nome}: ${valor}`)
-                .join(", ")}
+                .join(', ')}
             </p>
           )}
 
-          {/* Variações */}
           {Object.keys(agrupadas).map((nome) => (
             <div key={nome} className="mb-4">
               <h2 className="font-semibold">{nome}:</h2>
@@ -176,7 +174,6 @@ const ProdutoDetalhe = () => {
             </div>
           ))}
 
-          {/* Botões de ação */}
           <div className="flex gap-3 mt-6 flex-col sm:flex-row">
             <button
               onClick={adicionarAoCarrinho}
